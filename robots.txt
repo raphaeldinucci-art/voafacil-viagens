@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://voafacil-viagens.onrender.com/sitemap.xml
+Sitemap: https://voafacil.com/sitemap.xml
