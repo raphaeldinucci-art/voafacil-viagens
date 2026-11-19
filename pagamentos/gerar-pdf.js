@@ -106,9 +106,9 @@ async function montarOrcamento(lib,origem,logoBytes,plano){
   primeira.drawImage(logo,{x:xMarca,y:topo-60*escala,width:45*escala,height:45*escala});
   const dadosMarca=[
     ['VoaFácil Viagens',bold,13,21],
-    ['Realize seu sonho com a VoaFácil Viagens',regular,9,34],
-    ['CNPJ 42.640.302/0001-74',regular,9,47],
-    ['+55 (21) 99797-5010',regular,9,60]
+    ['CNPJ 42.640.302/0001-74',regular,9,34],
+    ['+55 (21) 99797-5010',regular,9,47],
+    ['Voa Fácil. Sua passagem sem complicação.',regular,9,60]
   ];
   for(const [texto,font,tamanho,distancia] of dadosMarca){
     primeira.drawText(texto,{x:xTexto,y:topo-distancia*escala,size:tamanho*escala,font,color:branco});
