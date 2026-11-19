@@ -1,9 +1,26 @@
 let downloadAtual;
+let pdfGerado;
+function nomeDoPdf(){
+  const nome=porId('identificacao').value.trim().replace(/\.pdf$/i,'').replace(/[\\/:*?"<>|\u0000-\u001f]/g,' ').trim();
+  return (nome || 'Orçamento VoaFácil')+'.pdf';
+}
+porId('identificacao').oninput=()=>{porId('baixar').download=nomeDoPdf();};
+porId('compartilhar').onclick=async()=>{
+  if(!pdfGerado)return;
+  const arquivo=new File([pdfGerado],nomeDoPdf(),{type:'application/pdf'});
+  try{
+    await navigator.share({files:[arquivo]});
+  }catch(erro){
+    if(erro.name!=='AbortError') porId('erroPdf').textContent='Baixe o PDF e envie o arquivo pelo WhatsApp.';
+  }
+};
 let versaoPdf=0;
 function limparDownload(){
   versaoPdf++;
   if(downloadAtual) URL.revokeObjectURL(downloadAtual);
   downloadAtual=null;
+  pdfGerado=null;
+  porId('compartilhar').hidden=true;
   porId('baixar').hidden=true;
   porId('erroPdf').textContent='';
 }
@@ -145,9 +162,14 @@ porId('gerar').onclick=async()=>{
     plano.espacoLivre=bytes?await margemInferior(bytes):0;
     const saida=await montarOrcamento(lib,bytes,logo,plano);
     if(versao!==versaoPdf)return;
-    downloadAtual=URL.createObjectURL(new Blob([saida],{type:'application/pdf'}));
-    link.href=downloadAtual;link.download=(origem?.name.replace(/\.pdf$/i,'')||'Orcamento')+'-VoaFacil-'+(plano.parcelas?'1a12x':plano.n+'x')+'.pdf';
-    link.hidden=false;link.click();
+    pdfGerado=new File([saida],nomeDoPdf(),{type:'application/pdf'});
+    downloadAtual=URL.createObjectURL(pdfGerado);
+    link.href=downloadAtual;
+    link.download=nomeDoPdf();
+    link.hidden=false;
+    const podeCompartilhar=!!navigator.share && !!navigator.canShare?.({files:[pdfGerado]});
+    porId('compartilhar').hidden=!podeCompartilhar;
+    porId('erroPdf').textContent=podeCompartilhar?'PDF pronto para compartilhar.':'PDF pronto. Baixe o arquivo para enviá-lo pelo WhatsApp.';
   }catch{if(versao===versaoPdf)porId('erroPdf').textContent='Não foi possível gerar o PDF. Confira se o original tem proteção e tente novamente.';}
   finally{btn.disabled=false;btn.textContent='Gerar novo PDF';}
 };

@@ -65,6 +65,7 @@ arquivo.onchange = async () => {
   const file = arquivo.files[0];
   if (!file) return;
   arquivoDoOrcamento=file;
+  porId('identificacao').value=file.name.replace(/\.pdf$/i,'').slice(0,100);
 
   const atual = ++revisao;
   try { sessionStorage.removeItem('valorOrcamento'); } catch {}
