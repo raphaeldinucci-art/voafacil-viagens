@@ -49,7 +49,7 @@ function atualizar(){
   grade.append(botao);
  }
  resultado.hidden=!escolhida;
- resultado.textContent=escolhida?'Total para o cliente: '+dinheiro.format(totalPara(escolhida)/100):'';
+ resultado.textContent=escolhida?'Total: '+dinheiro.format(totalPara(escolhida)/100):'';
 }
 abrir.onclick=()=>painel.showModal();
 fechar.onclick=()=>painel.close();
