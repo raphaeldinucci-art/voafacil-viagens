@@ -4,25 +4,49 @@ const estado = document.querySelector('#estado');
 let revisao = 0;
 let url;
 
-async function identificarTotal(bytes) {
+async function lerComPdfJs(bytes) {
   const pdfjs = await import('./pdfjs/pdf.min.mjs');
   pdfjs.GlobalWorkerOptions.workerSrc = new URL('./pdfjs/pdf.worker.min.mjs', document.baseURI).href;
   // Preload the local worker module so PDF.js can parse on browsers that restrict workers.
   await import('./pdfjs/pdf.worker.min.mjs');
   const doc = await pdfjs.getDocument({data: bytes, isEvalSupported: false}).promise;
   try {
-    const valores = new Set();
-    const totais = new Set();
+    const paginas = [];
     for (let pagina = 1; pagina <= doc.numPages; pagina++) {
       const conteudo = await (await doc.getPage(pagina)).getTextContent();
-      const texto = conteudo.items.map(item => item.str + (item.hasEOL ? '\n' : ' ')).join('');
-      const preco = /R\$\s*([\d.]+,\d{2})(?!\d)/gi;
-      for (const m of texto.matchAll(preco)) valores.add(m[1]);
-      const rotulo = /\b(?:valor\s+total|total\s+(?:geral|à\s+vista|do\s+orçamento)|total)\s*[:–-]?\s*(?:R\$\s*)?([\d.]+,\d{2})(?!\d)/gi;
-      for (const m of texto.matchAll(rotulo)) totais.add(m[1]);
+      paginas.push(conteudo.items.map(item => item.str + (item.hasEOL ? '\n' : ' ')).join(''));
+    }
+    return valoresDoOrcamento(paginas);
+  } finally { await doc.destroy(); }
+}
+
+function valoresDoOrcamento(paginas) {
+  const valores = new Set();
+  const totais = new Set();
+  for (const texto of paginas) {
+    const preco = /R\$\s*([\d.]+,\d{2})(?!\d)/gi;
+    for (const m of texto.matchAll(preco)) valores.add(m[1]);
+    const rotulo = /\b(?:valor\s+total|total\s+(?:geral|à\s+vista|do\s+orçamento)|total)\s*[:–-]?\s*(?:R\$\s*)?([\d.]+,\d{2})(?!\d)/gi;
+    for (const m of texto.matchAll(rotulo)) totais.add(m[1]);
     }
     return [...(totais.size ? totais : valores)].filter(v => paraCentavos(v) > 0);
-  } finally { await doc.destroy(); }
+}
+
+async function identificarTotal(bytes) {
+  try {
+    const {PDFiumLibrary} = await import('./pdfium/leitor.mjs');
+    const resposta = await fetch('./pdfium/pdfium.wasm');
+    if (!resposta.ok) throw new Error('Falha ao carregar o leitor');
+    const leitor = await PDFiumLibrary.init({wasmBinary: await resposta.arrayBuffer()});
+    try {
+      const doc = await leitor.loadDocument(new Uint8Array(bytes));
+      try {
+        return valoresDoOrcamento(Array.from(doc.pages(), pagina => pagina.getText()));
+      } finally { doc.destroy(); }
+    } finally { leitor.destroy(); }
+  } catch {
+    return lerComPdfJs(bytes);
+  }
 }
 
 function paraCentavos(valor) {
