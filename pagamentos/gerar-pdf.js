@@ -110,7 +110,7 @@ async function montarOrcamento(lib,origem,logoBytes,plano){
     const inicio=!origem?y+87:y+101;
     if(!origem) ultima.drawText('Total à vista: '+moeda(plano.vista),{x,y:y+106,size:12,font:regular,color:tinta});
     plano.parcelas.forEach((valor,i)=>{
-      const coluna=i%2, linha=Math.floor(i/2);
+      const coluna=Math.floor(i/6), linha=i%6;
       const texto=(i+1)+'x '+moeda(valor);
       const size=Math.min(14,(w/2-36)/bold.widthOfTextAtSize(texto,1));
       ultima.drawText(texto,{x:x+coluna*(w/2-16),y:inicio-linha*(!origem?13:16),size,font:bold,color:azul});
