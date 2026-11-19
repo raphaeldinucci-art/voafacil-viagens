@@ -6,7 +6,7 @@ let url;
 
 async function identificarTotal(file) {
   const pdfjs = await import('./pdfjs/pdf.min.mjs');
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL('./pdfjs/pdf.worker.min.mjs', import.meta.url).href;
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL('./pdfjs/pdf.worker.min.mjs', document.baseURI).href;
   const doc = await pdfjs.getDocument({data: await file.arrayBuffer(), isEvalSupported: false}).promise;
   try {
     const valores = new Set();
@@ -33,24 +33,42 @@ arquivo.onchange = async () => {
   total.disabled = false;
   document.querySelector('#conferencia').hidden = !file;
   if (!file) return;
-  url = URL.createObjectURL(file);
-  document.querySelector('#abrirPdf').href = url;
-  estado.textContent = 'Lendo o total do orçamento…';
+  const link = document.querySelector('#abrirPdf');
+  estado.textContent = 'Arquivo selecionado: ' + file.name + '. Lendo o valor…';
+  estado.scrollIntoView({block: 'nearest'});
+  try {
+    url = URL.createObjectURL(file);
+    link.href = url;
+    link.hidden = false;
+  } catch { link.hidden = true; }
+  const prazo = setTimeout(() => {
+    if (atual !== revisao) return;
+    ++revisao;
+    estado.textContent = 'A leitura demorou. Informe o valor à vista para continuar.';
+  }, 12000);
   let valor = '';
   try { valor = await identificarTotal(file); } catch {}
+  clearTimeout(prazo);
   if (atual !== revisao) return;
-  if (!total.value) total.value = valor;
-  estado.textContent = valor ? 'Confira o valor antes de calcular as parcelas.' : 'Confira o PDF e informe o valor à vista para calcular as parcelas.';
+  if (valor && !total.value && document.activeElement !== total) {
+    total.value = valor;
+    if (irParaCalculadora()) return;
+  }
+  estado.textContent = 'Informe o valor à vista que aparece no PDF e toque em Calcular parcelamento.';
 };
 total.oninput = () => total.setCustomValidity('');
 document.querySelector('#simular').onsubmit = event => {
   event.preventDefault();
-  const valor = total.value.trim();
-  if (!/^(?:\d+|\d{1,3}(?:\.\d{3})+)(?:,\d{1,2})?$/.test(valor)) return erro();
-  const centavos = Math.round(Number(valor.replaceAll('.', '').replace(',', '.')) * 100);
-  if (!(centavos > 0 && centavos <= 99999999999)) return erro();
-  location.assign('calculadora.html#centavos=' + centavos);
+  if (!irParaCalculadora()) erro();
 };
+function irParaCalculadora() {
+  const valor = total.value.trim();
+  if (!/^(?:\d+|\d{1,3}(?:\.\d{3})+)(?:,\d{1,2})?$/.test(valor)) return false;
+  const centavos = Math.round(Number(valor.replaceAll('.', '').replace(',', '.')) * 100);
+  if (!(centavos > 0 && centavos <= 99999999999)) return false;
+  location.assign('calculadora.html#centavos=' + centavos);
+  return true;
+}
 function erro() {
   total.setCustomValidity('Informe um valor em reais, por exemplo 1.250,50.');
   total.reportValidity();
