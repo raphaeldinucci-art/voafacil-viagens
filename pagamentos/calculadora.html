@@ -80,7 +80,11 @@ valor.oninput=()=>{
  atualizar();
 };
 bandeira.onchange=atualizar;
-const recebido=new URLSearchParams(location.hash.slice(1)).get('centavos');
+let recebido=new URLSearchParams(location.hash.slice(1)).get('centavos');
+try {
+ if(recebido && /^\d{1,11}$/.test(recebido)) sessionStorage.setItem('valorOrcamento',recebido);
+ else recebido=sessionStorage.getItem('valorOrcamento');
+} catch {}
 if(recebido && /^\d{1,11}$/.test(recebido)){
  valor.value=formatarValor.format(Number(recebido)/100);
  history.replaceState(null,'',location.pathname);
