@@ -96,15 +96,22 @@ async function montarOrcamento(lib,origem,logoBytes,plano){
     page.setCropBox(x,my,width,tamanho);
     return {x,y,width,height};
   }
-  if(modelo[0] && primeira===paginas[0]){
-    const caixa=primeira.getCropBox();
-    primeira.drawImage(logo,{x:caixa.x+11,y:caixa.y+caixa.height-59,width:44,height:44});
-  }else{
-  const cab=ampliar(primeira,56,0);
-  primeira.drawRectangle({x:cab.x,y:cab.y+cab.height,width:cab.width,height:56,color:branco});
-  primeira.drawImage(logo,{x:cab.x+14,y:cab.y+cab.height+2,width:52,height:52});
-  primeira.drawText('Orçamento de viagem',{x:cab.x+76,y:cab.y+cab.height+21,size:16,font:bold,color:tinta});
-  primeira.drawRectangle({x:cab.x,y:cab.y+cab.height,width:cab.width,height:2,color:azul});
+  const modeloConhecido=modelo[0] && primeira===paginas[0];
+  const cab=modeloConhecido?primeira.getCropBox():ampliar(primeira,72,0);
+  const topo=cab.y+cab.height+(modeloConhecido?0:72);
+  const escala=Math.min(1,cab.width/335);
+  const xMarca=cab.x+11*escala;
+  const xTexto=cab.x+66*escala;
+  primeira.drawRectangle({x:cab.x,y:topo-71*escala,width:modeloConhecido?Math.min(cab.width,315*escala):cab.width,height:71*escala,color:azul});
+  primeira.drawImage(logo,{x:xMarca,y:topo-60*escala,width:45*escala,height:45*escala});
+  const dadosMarca=[
+    ['VoaFácil Viagens',bold,13,21],
+    ['Realize seu sonho com a VoaFácil Viagens',regular,9,34],
+    ['CNPJ 42.640.302/0001-74',regular,9,47],
+    ['+55 (21) 99797-5010',regular,9,60]
+  ];
+  for(const [texto,font,tamanho,distancia] of dadosMarca){
+    primeira.drawText(texto,{x:xTexto,y:topo-distancia*escala,size:tamanho*escala,font,color:branco});
   }
   if(plano.espacoLivre>20 && ultima===paginas[paginas.length-1]){
     const caixa=ultima.getCropBox();
