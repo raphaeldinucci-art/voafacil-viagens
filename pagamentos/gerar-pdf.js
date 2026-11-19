@@ -117,19 +117,20 @@ async function montarOrcamento(lib,origem,logoBytes,plano){
     const caixa=ultima.getCropBox();
     ultima.setCropBox(caixa.x,caixa.y+plano.espacoLivre,caixa.width,caixa.height-plano.espacoLivre);
   }
-  const rod=ampliar(ultima,0,134);
-  const x=rod.x+28,y=rod.y-134,w=rod.width;
-  ultima.drawRectangle({x:rod.x,y,width:w,height:134,color:azul});
+  const rod=ampliar(ultima,0,156);
+  const x=rod.x+28,y=rod.y-156,w=rod.width;
+  ultima.drawRectangle({x:rod.x,y,width:w,height:156,color:azul});
   const largura=w-20;
   const contorno=[
     'M 8 0', 'H '+(largura-8), 'Q '+largura+' 0 '+largura+' 8',
-    'V 106', 'Q '+largura+' 114 '+(largura-8)+' 114',
-    'H 8', 'Q 0 114 0 106', 'V 8', 'Q 0 0 8 0', 'Z'
+    'V 128', 'Q '+largura+' 136 '+(largura-8)+' 136',
+    'H 8', 'Q 0 136 0 128', 'V 8', 'Q 0 0 8 0', 'Z'
   ].join(' ');
-  ultima.drawSvgPath(contorno,{x:rod.x+10,y:y+124,color:branco});
+  ultima.drawSvgPath(contorno,{x:rod.x+10,y:y+146,color:branco});
   for(const lado of [rod.x+10,rod.x+w-10]){
-    ultima.drawCircle({x:lado,y:y+67,size:6,color:azul});
+    ultima.drawCircle({x:lado,y:y+78,size:6,color:azul});
   }
+  ultima.drawText('Cartão: '+plano.bandeira,{x,y:y+127,size:12,font:bold,color:tinta});
   if(plano.parcelas){
     const inicio=!origem?y+87:y+101;
     if(!origem) ultima.drawText('Total à vista: '+moeda(plano.vista),{x,y:y+106,size:12,font:regular,color:tinta});
@@ -159,7 +160,7 @@ porId('gerar').onclick=async()=>{
   const btn=porId('gerar'),link=porId('baixar');
   limparDownload();
   const versao=versaoPdf;
-  const plano={n:escolhida,vista:centavos()};
+  const plano={n:escolhida,vista:centavos(),bandeira:bandeira.selectedOptions[0].textContent};
   if(escolhida==='todos') plano.parcelas=Array.from({length:12},(_,i)=>Math.round(totalPara(i+1)/(i+1)));
   else plano.total=totalPara(escolhida);
   const origem=arquivoDoOrcamento;

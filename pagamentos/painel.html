@@ -16,7 +16,7 @@ nav{display:flex;gap:8px;margin:0 0 18px}nav a{flex:1;text-align:center;padding:
 <main><header>VoaFácil Viagens</header><nav aria-label="Painel"><a id="abaPdf" href="#pdf">Orçamento em PDF</a><a id="abaCalc" href="#calculadora">Calculadora</a></nav><div id="telaPdf"><h1>Orçamento em PDF</h1>
 <label class="btn escolher">Escolher PDF<input id="file" type="file" accept=".pdf,application/pdf"></label>
 <p id="nome"></p>
-<a id="abrirPdf" target="_blank" rel="noopener" hidden>Ver PDF escolhido</a></div><div id="telaCalc" hidden><h1>Simulador de parcelamento</h1><p id="estado" role="status"></p><div id="alternativas"></div><section id="campos"><label>Valor líquido (R$)<input id="valor" inputmode="decimal" placeholder="0,00"></label><label>Bandeira<select id="bandeira"><option>Visa</option><option>Mastercard</option><option>Amex / Elo / Hiper</option></select></label></section>
+<a id="abrirPdf" target="_blank" rel="noopener" hidden>Ver PDF escolhido</a></div><div id="telaCalc" hidden><h1>Simulador de parcelamento</h1><p id="estado" role="status"></p><div id="alternativas"></div><section id="campos"><label>Valor líquido (R$)<input id="valor" inputmode="decimal" placeholder="0,00"></label><label>Bandeira<select id="bandeira"><option value="0">Visa</option><option value="1">Mastercard</option><option value="2">Amex</option><option value="2">Elo</option><option value="2">Hiper</option></select></label></section>
 <div id="opcoes" hidden><label for="abrir">Parcelamento</label><button id="abrir" aria-haspopup="dialog">Selecione as parcelas</button><dialog id="painel" aria-labelledby="titulo"><header><strong id="titulo">Escolha as parcelas</strong><button id="fechar">Fechar</button></header><div id="grade"><button id="todos">Todos</button></div></dialog><output id="resultado" aria-live="polite" hidden></output><label for="identificacao">Nome do orçamento<input id="identificacao" maxlength="100" placeholder="Ex. Tatiana - Rio a São Paulo"></label><button id="gerar" hidden>Gerar novo PDF</button><button id="compartilhar" hidden>Compartilhar PDF</button><a id="baixar" hidden>Baixar PDF gerado</a><p id="erroPdf" role="status"></p></div><p id="aviso"></p></div></main>
 <script>
 const porId = id => document.getElementById(id);
@@ -26,7 +26,7 @@ const dinheiro=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 const formatarValor=new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 function centavos(){return Number(valor.value.replace(/\D/g,''));}
 function totalPara(n){
- const taxa=taxas[bandeira.selectedIndex][n-1];
+ const taxa=taxas[Number(bandeira.value)][n-1];
  return Math.round(centavos()*10000/(10000-taxa));
 }
 let arquivoDoOrcamento=null;
@@ -122,4 +122,4 @@ else{
 }
 window.addEventListener('hashchange',exibirTela);
 exibirTela();
-</script><script src="gerar-pdf.js?v=9"></script><script>atualizar();</script><script src="cotacao.js?v=8"></script></html>
+</script><script src="gerar-pdf.js?v=10"></script><script>atualizar();</script><script src="cotacao.js?v=8"></script></html>
