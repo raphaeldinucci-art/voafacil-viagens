@@ -94,15 +94,23 @@ async function montarOrcamento(lib,origem,logoBytes,plano){
     ultima.setCropBox(caixa.x,caixa.y+plano.espacoLivre,caixa.width,caixa.height-plano.espacoLivre);
   }
   const rod=ampliar(ultima,0,134);
-  const x=rod.x+18,y=rod.y-134,w=rod.width;
-  ultima.drawRectangle({x:rod.x,y,width:w,height:134,color:branco});
-  ultima.drawRectangle({x:rod.x,y:y+130,width:w,height:4,color:azul});
+  const x=rod.x+28,y=rod.y-134,w=rod.width;
+  ultima.drawRectangle({x:rod.x,y,width:w,height:134,color:azul});
+  const largura=w-20;
+  const contorno=[
+    'M 8 0', 'H '+(largura-8), 'Q '+largura+' 0 '+largura+' 8',
+    'V 106', 'Q '+largura+' 114 '+(largura-8)+' 114',
+    'H 8', 'Q 0 114 0 106', 'V 8', 'Q 0 0 8 0', 'Z'
+  ].join(' ');
+  ultima.drawSvgPath(contorno,{x:rod.x+10,y:y+124,color:branco});
+  for(const lado of [rod.x+10,rod.x+w-10]){
+    ultima.drawCircle({x:lado,y:y+67,size:6,color:azul});
+  }
   const linha=''+plano.n+'x de '+moeda(Math.round(plano.total/plano.n));
-  const tamanho=Math.min(32,(w-36)/bold.widthOfTextAtSize(linha,1));
+  const tamanho=Math.min(32,(w-56)/bold.widthOfTextAtSize(linha,1));
   ultima.drawText('Total à vista: '+moeda(plano.vista),{x,y:y+106,size:12,font:regular,color:tinta});
   ultima.drawText(linha,{x,y:y+62,size:tamanho,font:bold,color:azul});
   ultima.drawText('Total parcelado: '+moeda(plano.total),{x,y:y+34,size:11,font:regular,color:tinta});
-  if(plano.total%plano.n) ultima.drawText('Pode haver ajuste de centavos entre as parcelas.',{x,y:y+15,size:9,font:regular,color:tinta});
   pdf.setTitle('Orçamento VoaFácil Viagens');return pdf.save();
 }
 porId('gerar').onclick=async()=>{
