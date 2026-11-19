@@ -109,11 +109,18 @@ async function montarOrcamento(lib,origem,logoBytes,plano){
   if(plano.parcelas){
     const inicio=!origem?y+87:y+101;
     if(!origem) ultima.drawText('Total à vista: '+moeda(plano.vista),{x,y:y+106,size:12,font:regular,color:tinta});
-    plano.parcelas.forEach((valor,i)=>{
+    const valores=plano.parcelas.map(moeda);
+    const medir=texto=>bold.widthOfTextAtSize(texto,1);
+    const larguraRotulo=medir('12x ');
+    const larguraValor=Math.max(...valores.map(medir));
+    const size=Math.min(14,(w/2-36)/(larguraRotulo+larguraValor));
+    valores.forEach((texto,i)=>{
       const coluna=Math.floor(i/6), linha=i%6;
-      const texto=(i+1)+'x '+moeda(valor);
-      const size=Math.min(14,(w/2-36)/bold.widthOfTextAtSize(texto,1));
-      ultima.drawText(texto,{x:x+coluna*(w/2-16),y:inicio-linha*(!origem?13:16),size,font:bold,color:azul});
+      const esquerda=x+coluna*(w/2-16);
+      const altura=inicio-linha*(!origem?13:16);
+      const estilo={y:altura,size,font:bold,color:azul};
+      ultima.drawText((i+1)+'x',{...estilo,x:esquerda});
+      ultima.drawText(texto,{...estilo,x:esquerda+(larguraRotulo+larguraValor-medir(texto))*size});
     });
   }else{
   const linha=''+plano.n+'x de '+moeda(Math.round(plano.total/plano.n));
