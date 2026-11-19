@@ -106,18 +106,31 @@ async function montarOrcamento(lib,origem,logoBytes,plano){
   for(const lado of [rod.x+10,rod.x+w-10]){
     ultima.drawCircle({x:lado,y:y+67,size:6,color:azul});
   }
+  if(plano.parcelas){
+    const inicio=!origem?y+87:y+101;
+    if(!origem) ultima.drawText('Total à vista: '+moeda(plano.vista),{x,y:y+106,size:12,font:regular,color:tinta});
+    plano.parcelas.forEach((valor,i)=>{
+      const coluna=i%2, linha=Math.floor(i/2);
+      const texto=(i+1)+'x '+moeda(valor);
+      const size=Math.min(14,(w/2-36)/bold.widthOfTextAtSize(texto,1));
+      ultima.drawText(texto,{x:x+coluna*(w/2-16),y:inicio-linha*(!origem?13:16),size,font:bold,color:azul});
+    });
+  }else{
   const linha=''+plano.n+'x de '+moeda(Math.round(plano.total/plano.n));
   const tamanho=Math.min(32,(w-56)/bold.widthOfTextAtSize(linha,1));
   ultima.drawText('Total à vista: '+moeda(plano.vista),{x,y:y+106,size:12,font:regular,color:tinta});
   ultima.drawText(linha,{x,y:y+62,size:tamanho,font:bold,color:azul});
   ultima.drawText('Total parcelado: '+moeda(plano.total),{x,y:y+34,size:11,font:regular,color:tinta});
+  }
   pdf.setTitle('Orçamento VoaFácil Viagens');return pdf.save();
 }
 porId('gerar').onclick=async()=>{
   const btn=porId('gerar'),link=porId('baixar');
   limparDownload();
   const versao=versaoPdf;
-  const plano={n:escolhida,vista:centavos(),total:totalPara(escolhida)};
+  const plano={n:escolhida,vista:centavos()};
+  if(escolhida==='todos') plano.parcelas=Array.from({length:12},(_,i)=>Math.round(totalPara(i+1)/(i+1)));
+  else plano.total=totalPara(escolhida);
   const origem=arquivoDoOrcamento;
   btn.disabled=true;btn.textContent='Gerando PDF…';
   try{
@@ -126,7 +139,7 @@ porId('gerar').onclick=async()=>{
     const saida=await montarOrcamento(lib,bytes,logo,plano);
     if(versao!==versaoPdf)return;
     downloadAtual=URL.createObjectURL(new Blob([saida],{type:'application/pdf'}));
-    link.href=downloadAtual;link.download=(origem?.name.replace(/\.pdf$/i,'')||'Orcamento')+'-VoaFacil-'+plano.n+'x.pdf';
+    link.href=downloadAtual;link.download=(origem?.name.replace(/\.pdf$/i,'')||'Orcamento')+'-VoaFacil-'+(plano.parcelas?'1a12x':plano.n+'x')+'.pdf';
     link.hidden=false;link.click();
   }catch{if(versao===versaoPdf)porId('erroPdf').textContent='Não foi possível gerar o PDF. Confira se o original tem proteção e tente novamente.';}
   finally{btn.disabled=false;btn.textContent='Gerar novo PDF';}
