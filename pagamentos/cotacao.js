@@ -4,10 +4,12 @@ const estado = document.querySelector('#estado');
 let revisao = 0;
 let url;
 
-async function identificarTotal(file) {
+async function identificarTotal(bytes) {
   const pdfjs = await import('./pdfjs/pdf.min.mjs');
   pdfjs.GlobalWorkerOptions.workerSrc = new URL('./pdfjs/pdf.worker.min.mjs', document.baseURI).href;
-  const doc = await pdfjs.getDocument({data: await file.arrayBuffer(), isEvalSupported: false}).promise;
+  // Preload the local worker module so PDF.js can parse on browsers that restrict workers.
+  await import('./pdfjs/pdf.worker.min.mjs');
+  const doc = await pdfjs.getDocument({data: bytes, isEvalSupported: false}).promise;
   try {
     const valores = new Set();
     const totais = new Set();
@@ -16,7 +18,7 @@ async function identificarTotal(file) {
       const texto = conteudo.items.map(item => item.str + (item.hasEOL ? '\n' : ' ')).join('');
       const preco = /R\$\s*([\d.]+,\d{2})(?!\d)/gi;
       for (const m of texto.matchAll(preco)) valores.add(m[1]);
-      const rotulo = /\b(?:valor\s+total|total\s+(?:geral|à\s+vista|do\s+orçamento)|total)\s*[:–-]?\s*R\$\s*([\d.]+,\d{2})(?!\d)/gi;
+      const rotulo = /\b(?:valor\s+total|total\s+(?:geral|à\s+vista|do\s+orçamento)|total)\s*[:–-]?\s*(?:R\$\s*)?([\d.]+,\d{2})(?!\d)/gi;
       for (const m of texto.matchAll(rotulo)) totais.add(m[1]);
     }
     return [...(totais.size ? totais : valores)].filter(v => paraCentavos(v) > 0);
@@ -29,6 +31,9 @@ function paraCentavos(valor) {
 }
 function calcular(valor) {
   document.querySelector('#abaCalc').hidden=false;
+  document.querySelector('#campos').hidden=false;
+  estado.textContent='';
+  alternativas.replaceChildren();
   abrirOrcamento(paraCentavos(valor));
 }
 arquivo.onchange = async () => {
@@ -41,7 +46,10 @@ arquivo.onchange = async () => {
   lendoOrcamento=true;
   valor.value='';
   atualizar();
-  direto.hidden = true;
+  direto.hidden = false;
+  document.querySelector('#campos').hidden=true;
+  location.hash='#calculadora';
+  exibirTela();
   alternativas.replaceChildren();
   document.querySelector('#nome').textContent = file.name;
   estado.textContent = 'Lendo o total do PDF…';
@@ -49,12 +57,14 @@ arquivo.onchange = async () => {
   url = URL.createObjectURL(file);
   link.href = url;
   link.hidden = false;
-  arquivo.value = '';
+
   const prazo = setTimeout(() => {
     if (revisao === atual) estado.textContent = 'Ainda lendo o documento. Você pode escolher outro PDF.';
   }, 12000);
   try {
-    const opcoes = await identificarTotal(file);
+    const bytes = await file.arrayBuffer();
+    if (atual !== revisao) return;
+    const opcoes = await identificarTotal(bytes);
     if (atual !== revisao) return;
     if (opcoes.length === 1) {
       calcular(opcoes[0]);
@@ -74,7 +84,7 @@ arquivo.onchange = async () => {
     clearTimeout(prazo);
     if (atual === revisao) {
       lendoOrcamento=false;
-      direto.hidden=!valor.value;
+      arquivo.value='';
     }
   }
 };

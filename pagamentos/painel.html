@@ -14,8 +14,8 @@ dialog header{display:flex;align-items:center;justify-content:space-between;colo
 nav{display:flex;gap:8px;margin:0 0 18px}nav a{flex:1;text-align:center;padding:12px 4px;border:1px solid #bed1df;border-radius:10px;color:#123454;text-decoration:none;background:white;font:600 16px system-ui}nav a[aria-current]{background:#123454;color:white}[hidden]{display:none!important}.escolher{position:relative;background:#0876f5;color:white;text-align:center;padding:16px;border-radius:12px;cursor:pointer}.escolher input{position:absolute;inset:0;opacity:0;margin:0;height:100%;cursor:pointer}.escolher:focus-within{outline:3px solid #123454}#nome{overflow-wrap:anywhere}#alternativas button{margin:5px;padding:12px;border-radius:8px}#estado:empty{display:none}</style>
 <main><header>VoaFácil Viagens</header><nav aria-label="Painel"><a id="abaPdf" href="#pdf">Orçamento em PDF</a><a id="abaCalc" href="#calculadora">Calculadora</a></nav><div id="telaPdf"><h1>Orçamento em PDF</h1>
 <label class="btn escolher">Escolher PDF<input id="file" type="file" accept=".pdf,application/pdf"></label>
-<p id="nome"></p><p id="estado" role="status"></p><div id="alternativas"></div>
-<a id="abrirPdf" target="_blank" rel="noopener" hidden>Ver PDF escolhido</a></div><div id="telaCalc" hidden><h1>Simulador de parcelamento</h1><section><label>Valor líquido (R$)<input id="valor" inputmode="decimal" placeholder="0,00"></label><label>Bandeira<select id="bandeira"><option>Visa</option><option>Mastercard</option><option>Amex / Elo / Hiper</option></select></label></section>
+<p id="nome"></p>
+<a id="abrirPdf" target="_blank" rel="noopener" hidden>Ver PDF escolhido</a></div><div id="telaCalc" hidden><h1>Simulador de parcelamento</h1><p id="estado" role="status"></p><div id="alternativas"></div><section id="campos"><label>Valor líquido (R$)<input id="valor" inputmode="decimal" placeholder="0,00"></label><label>Bandeira<select id="bandeira"><option>Visa</option><option>Mastercard</option><option>Amex / Elo / Hiper</option></select></label></section>
 <div id="opcoes" hidden><label for="abrir">Parcelamento</label><button id="abrir" aria-haspopup="dialog">Selecione as parcelas</button><dialog id="painel" aria-labelledby="titulo"><header><strong id="titulo">Escolha as parcelas</strong><button id="fechar">Fechar</button></header><div id="grade"></div></dialog><output id="resultado" aria-live="polite" hidden></output></div><p id="aviso"></p></div></main>
 <script>
 const porId = id => document.getElementById(id);
@@ -87,7 +87,7 @@ valor.oninput=()=>{
 bandeira.onchange=atualizar;
 let lendoOrcamento=false;
 function exibirTela(){
- const calc=location.hash==='#calculadora' && !lendoOrcamento;
+ const calc=location.hash==='#calculadora';
  porId('telaPdf').hidden=calc;
  porId('telaCalc').hidden=!calc;
  for(const [id,ativa] of [['abaPdf',!calc],['abaCalc',calc]]){
@@ -116,4 +116,4 @@ else{
 window.addEventListener('hashchange',exibirTela);
 atualizar();
 exibirTela();
-</script><script src="cotacao.js?v=4"></script></html>
+</script><script src="cotacao.js?v=5"></script></html>
