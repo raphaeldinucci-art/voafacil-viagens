@@ -2,6 +2,7 @@ const arquivo = document.querySelector('#file');
 const alternativas = document.querySelector('#alternativas');
 const estado = document.querySelector('#estado');
 let revisao = 0;
+
 let url;
 
 async function lerComPdfJs(bytes) {
@@ -63,6 +64,8 @@ function calcular(valor) {
 arquivo.onchange = async () => {
   const file = arquivo.files[0];
   if (!file) return;
+  arquivoDoOrcamento=file;
+
   const atual = ++revisao;
   try { sessionStorage.removeItem('valorOrcamento'); } catch {}
   const link = document.querySelector('#abrirPdf');
