@@ -28,7 +28,8 @@ function paraCentavos(valor) {
   return Number.isSafeInteger(n) && n <= 99999999999 ? n : 0;
 }
 function calcular(valor) {
-  location.assign('calculadora.html#centavos=' + paraCentavos(valor));
+  document.querySelector('#abaCalc').hidden=false;
+  abrirOrcamento(paraCentavos(valor));
 }
 arquivo.onchange = async () => {
   const file = arquivo.files[0];
@@ -36,7 +37,10 @@ arquivo.onchange = async () => {
   const atual = ++revisao;
   try { sessionStorage.removeItem('valorOrcamento'); } catch {}
   const link = document.querySelector('#abrirPdf');
-  const direto = document.querySelector('#direto');
+  const direto = document.querySelector('#abaCalc');
+  lendoOrcamento=true;
+  valor.value='';
+  atualizar();
   direto.hidden = true;
   alternativas.replaceChildren();
   document.querySelector('#nome').textContent = file.name;
@@ -68,6 +72,9 @@ arquivo.onchange = async () => {
     if (atual === revisao) estado.textContent = 'Não foi possível ler este PDF. Escolha um orçamento com texto selecionável e sem senha.';
   } finally {
     clearTimeout(prazo);
-    if (atual === revisao) direto.hidden = false;
+    if (atual === revisao) {
+      lendoOrcamento=false;
+      direto.hidden=!valor.value;
+    }
   }
 };
