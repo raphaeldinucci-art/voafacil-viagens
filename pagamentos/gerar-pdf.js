@@ -130,7 +130,12 @@ async function montarOrcamento(lib,origem,logoBytes,plano){
   for(const lado of [rod.x+10,rod.x+w-10]){
     ultima.drawCircle({x:lado,y:y+78,size:6,color:azul});
   }
-  ultima.drawText('Cartão: '+plano.bandeira,{x,y:y+127,size:12,font:bold,color:tinta});
+  const respostaMarca=await fetch('./bandeiras/'+encodeURIComponent(plano.bandeira.toLowerCase())+'.png');
+  if(!respostaMarca.ok) throw Error('Logotipo da bandeira indisponível');
+  const marcaCartao=await pdf.embedPng(await respostaMarca.arrayBuffer());
+  const dimensoes=marcaCartao.scaleToFit(30,17);
+  ultima.drawImage(marcaCartao,{x,y:y+131-dimensoes.height/2,...dimensoes});
+  ultima.drawText('Cartão: '+plano.bandeira,{x:x+dimensoes.width+6,y:y+127,size:12,font:bold,color:tinta});
   if(plano.parcelas){
     const inicio=!origem?y+87:y+101;
     if(!origem) ultima.drawText('Total à vista: '+moeda(plano.vista),{x,y:y+106,size:12,font:regular,color:tinta});
